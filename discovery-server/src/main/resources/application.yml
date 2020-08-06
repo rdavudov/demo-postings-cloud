@@ -1,0 +1,24 @@
+server:
+  port: 8761
+  
+spring:
+  application:
+    name: discovery-service
+
+service:
+  eureka-username: u
+  eureka-password: p
+    
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false # since we are eureka server no need to connect to eureka server
+    fetch-registry: false       # since we are using single eureka server no need to fetch registry from other servers
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/    
+  server:
+    waitTimeInMsWhenSyncEmpty: 0
+    response-cache-update-interval-ms: 5000      
+    
+management.endpoints.web.exposure.include: "*"    

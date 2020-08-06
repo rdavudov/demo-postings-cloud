@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: configserver    # it should register as configserver to found by other eureka clients
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/rdavudov/config-server-props.git
+          
+service:
+  eureka-username: u
+  eureka-password: p
+  eureka-server: localhost
+          
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${service.eureka-username}:${service.eureka-password}@${service.eureka-server}:8761/eureka/
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseRenewalIntervalInSeconds: 5
+    leaseExpirationDurationInSeconds: 5
+
+server:
+  port: 8888

@@ -1,0 +1,7 @@
+INSERT INTO post (id, title, body, category_id, is_public, stars, reference, user_id, created_at, edited_at) VALUES(0, 'title0', 'body0', 0, 'false', 3, 'http://www.google.com', '12345', parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss'), parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss')) ;
+INSERT INTO post (id, title, body, category_id, is_public, stars, reference, user_id, created_at, edited_at) VALUES(1, 'title1', 'body1', 0, 'false', 3, 'http://www.google.com', '12345', parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss'), parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss')) ;
+INSERT INTO post (id, title, body, category_id, is_public, stars, reference, user_id, created_at, edited_at) VALUES(2, 'title2', 'body2', 0, 'false', 3, 'http://www.google.com', '12345', parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss'), parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss')) ;
+INSERT INTO post (id, title, body, category_id, is_public, stars, reference, user_id, created_at, edited_at) VALUES(3, 'title3', 'body3', 0, 'false', 3, 'http://www.google.com', '12345', parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss'), parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss')) ;
+INSERT INTO post (id, title, body, category_id, is_public, stars, reference, user_id, created_at, edited_at) VALUES(4, 'title4', 'body4', 0, 'false', 3, 'http://www.google.com', '12345', parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss'), parsedatetime('01-01-2020 00:00:00', 'dd-MM-yyyy hh:mm:ss')) ;
+
+

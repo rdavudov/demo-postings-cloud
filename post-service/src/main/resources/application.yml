@@ -1,0 +1,60 @@
+server:
+  port: 8081
+
+debug: true
+
+spring:
+  application:
+    name: post
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: dbuser
+    password: dbpass
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      show-sql: true  
+
+service:
+  base:
+    uri: /api/v1
+  user:
+    uri: http://localhost:8080/api/v1/user
+  eureka-username: u
+  eureka-password: p
+  eureka-server: localhost    
+          
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${service.eureka-username}:${service.eureka-password}@${service.eureka-server}:8761/eureka/
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseRenewalIntervalInSeconds: 5
+    leaseExpirationDurationInSeconds: 5
+    
+management.endpoints.web.exposure.include: "*"
+
+resilience4j.circuitbreaker:
+  backends:
+    user:
+      registerHealthIndicator: true
+      ringBufferSizeInClosedState: 5
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000
+      ringBufferSizeInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      ignoreExceptions:
+        - java.lang.RuntimeException
+
+resilience4j.retry:
+  backends:
+    product:
+      maxRetryAttempts: 3
+      waitDuration: 1000
+      retryExceptions:
+      - java.lang.RuntimeException     

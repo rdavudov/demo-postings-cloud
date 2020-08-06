@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: user
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      username: mongouser
+      password: mongopass    
+
+service:
+  base:
+    uri: /api/v1/users
+  eureka-username: u
+  eureka-password: p
+  eureka-server: localhost    
+          
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${service.eureka-username}:${service.eureka-password}@${service.eureka-server}:8761/eureka/
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseRenewalIntervalInSeconds: 5
+    leaseExpirationDurationInSeconds: 5    
+
