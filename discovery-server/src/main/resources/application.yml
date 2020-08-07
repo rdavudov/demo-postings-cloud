@@ -8,6 +8,8 @@ spring:
 service:
   eureka-username: u
   eureka-password: p
+  eureka-web-username: web
+  eureka-web-password: webpass
     
 eureka:
   instance:

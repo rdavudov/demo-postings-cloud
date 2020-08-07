@@ -1,6 +1,5 @@
 package com.postings.demo.discovery.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -10,23 +9,31 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
 	private final String username;
 	private final String password;
+	private final String webUsername;
+	private final String webPassword;
+	
 
-	@Autowired
-	public SecurityConfig(@Value("${service.eureka-username}") String username, @Value("${service.eureka-password}") String password) {
+	public SecurityConfig(@Value("${service.eureka-username}") String username, @Value("${service.eureka-password}") String password, 
+			@Value("${service.eureka-web-username}") String webUsername, @Value("${service.eureka-web-password}") String webPassword) {
 		this.username = username;
 		this.password = password;
+		this.webUsername = webUsername;
+		this.webPassword = webPassword;
 	}
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 		.passwordEncoder(NoOpPasswordEncoder.getInstance())
-		.withUser(username)
-		.password(password)
-		.authorities("USER");
+			.withUser(username)
+			.password(password)
+			.authorities("USER")
+		.and()
+			.withUser(webUsername)
+			.password(webPassword)
+			.authorities("WEB_USER");
 	}
 
 	@Override
@@ -34,11 +41,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.csrf().disable()
 			.authorizeRequests()
+				.mvcMatchers("/eureka").hasAuthority("USER")
+				.mvcMatchers("/").hasAuthority("WEB_USER")
 				.anyRequest()
 				.authenticated()
 			.and()
 				.httpBasic() ;
 	}
-	
 	
 }
