@@ -16,14 +16,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateDto {
-	@Length(message = "password length must be between 8 and 128", min = 8, max = 128)
-	private String password ;
-	
-	private Boolean isBlocked ;
-	
 	private String firstName ;
 	
 	private String lastName ;
+	
+	private String picture ;
 	
 	@Min(value = 0, message = "posts can be less than zero")
 	private Integer posts ;

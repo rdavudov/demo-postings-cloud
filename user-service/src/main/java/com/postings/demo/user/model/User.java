@@ -1,10 +1,8 @@
 package com.postings.demo.user.model;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,7 +10,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.postings.demo.user.validator.UniqueEmail;
-import com.postings.demo.user.validator.UniqueUsername;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,29 +23,17 @@ public class User {
 	@Id
 	private String id ;
 	
-	@NotNull(message = "missing username")
-	@UniqueUsername
-	private String username ;
-	
-	@NotNull(message = "missing password")
-	@Length(message = "password length must be between 8 and 128", min = 8, max = 128)
-	private String password ;
-	
 	@NotNull(message = "missing email")
 	@Email
 	@UniqueEmail
 	private String email ;
 	
-	@Min(message = "version must be equal or greater than 0", value = 0)
-	private Integer version ;
-	
-	@NotNull
-	private Boolean isBlocked ;
-	
 	@NotNull(message = "missing firstname")
 	private String firstName ;
 	
 	private String lastName ;
+	
+	private String picture ;
 	
 	private Integer posts ;
 	
@@ -56,42 +41,19 @@ public class User {
 	
 	public static class UserBuilder {
 		private String id ;
-		private String username ;
-		private String password ;
 		private String email ;
-		private Integer version ;
-		private Boolean isBlocked ;
 		private String firstName ;
 		private String lastName ;
 		private Integer posts ;
+		private String picture ;
 		
 		public UserBuilder id(String id) {
 			this.id = id ;
 			return this ;
 		}
 		
-		public UserBuilder username(String username) {
-			this.username = username ;
-			return this ;
-		}
-		
-		public UserBuilder password(String password) {
-			this.password = password ;
-			return this ;
-		}
-		
 		public UserBuilder email(String email) {
 			this.email = email ;
-			return this ;
-		}
-		
-		public UserBuilder version(Integer version) {
-			this.version = version ;
-			return this ;
-		}
-		
-		public UserBuilder blocked(Boolean isBlocked) {
-			this.isBlocked = isBlocked ;
 			return this ;
 		}
 		
@@ -110,8 +72,13 @@ public class User {
 			return this ;
 		}
 		
+		public UserBuilder picture(String picture) {
+			this.picture = picture ;
+			return this ;
+		}
+		
 		public User build() {
-			return new User(id, username, password, email, version, isBlocked, firstName, lastName, posts) ;
+			return new User(id, email, firstName, lastName, picture, posts) ;
 		}
 	}
 	

@@ -2,7 +2,6 @@ package com.postings.demo.user;
 
 import static com.postings.demo.user.builder.TestUserBuilder.DTO_LASTNAME;
 import static com.postings.demo.user.builder.TestUserBuilder.ID;
-import static com.postings.demo.user.builder.TestUserBuilder.USERNAME;
 import static com.postings.demo.user.builder.TestUserBuilder.fullUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,6 +29,5 @@ public class TestUserMapper {
 		
 		assertThat(user.getLastName()).isEqualTo(DTO_LASTNAME) ;
 		assertThat(user.getId()).isEqualTo(ID) ;
-		assertThat(user.getUsername()).isEqualTo(USERNAME) ;
 	}
 }

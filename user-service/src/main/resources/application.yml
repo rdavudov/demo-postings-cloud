@@ -13,7 +13,7 @@ spring:
 
 service:
   base:
-    uri: /api/v1/users
+    uri: /api/v1
   eureka-username: u
   eureka-password: p
   eureka-server: localhost    

@@ -11,13 +11,13 @@ import com.postings.demo.user.dto.UserCreateDto;
 import com.postings.demo.user.dto.UserUpdateDto;
 import com.postings.demo.user.mapper.UserMapper;
 import com.postings.demo.user.model.User;
-import com.postings.demo.user.repository.UserRepositoy;
+import com.postings.demo.user.repository.UserRepository;
 
 @Service
 public class UserServiceImpl implements UserService {
 
 	@Autowired
-	private UserRepositoy repository ; 
+	private UserRepository repository ; 
 	
 	@Autowired
 	private UserMapper userMapper ;
@@ -27,11 +27,6 @@ public class UserServiceImpl implements UserService {
 		return repository.findById(id) ;
 	}
 
-	@Override
-	public Optional<User> findByUsername(String username) {
-		return repository.findByUsername(username) ;
-	}
-	
 	@Override
 	public Optional<User> findByEmail(String email) {
 		return repository.findByEmail(email) ;
@@ -46,7 +41,6 @@ public class UserServiceImpl implements UserService {
 	public User save(UserCreateDto dto) {
 		User user = new User() ;
 		userMapper.mapCreateUser(dto, user);
-		user.setVersion(1);
 		return repository.save(user) ;
 	}
 
@@ -54,7 +48,6 @@ public class UserServiceImpl implements UserService {
 	public Optional<User> update(String id, UserUpdateDto dto) {
 		return findById(id).map(user -> {
 			userMapper.mapUpdateUser(dto, user);
-			user.setVersion(user.getVersion() + 1);
 			return Optional.of(repository.save(user));
 		}).orElse(Optional.empty()) ;
 	}

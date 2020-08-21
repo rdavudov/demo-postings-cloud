@@ -8,8 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.postings.demo.user.model.User;
 
 @Repository
-public interface UserRepositoy extends MongoRepository<User, String> {
-	Optional<User> findByUsername(String username);
-	
+public interface UserRepository extends MongoRepository<User, String> {
 	Optional<User> findByEmail(String email);
 }

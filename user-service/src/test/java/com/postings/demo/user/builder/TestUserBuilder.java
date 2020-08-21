@@ -13,8 +13,6 @@ public class TestUserBuilder {
 	public static final String PASSWORD = "testtest" ;
 	public static final String EMAIL = "test@test.com" ;
 	public static final int VERSION = 1 ;
-	public static final Boolean BLOCKED = true ;
-	public static final Boolean UNBLOCKED = false ;
 	
 	public static final String DTO_LASTNAME = "lastdto" ;
 	
@@ -32,18 +30,14 @@ public class TestUserBuilder {
 	
 	public static UserBuilder testUserBuilder() {
 		return emptyUserBuilder()
-				.username(USERNAME)
-				.password(PASSWORD)
 				.email(EMAIL)
-				.blocked(UNBLOCKED)
 				.firstname(FIRSTNAME)
 				.lastname(LASTNAME);
 	}
 	
 	public static UserBuilder fullUserBuilder() {
 		return testUserBuilder()
-				.id("testid")
-				.version(1) ;
+				.id("testid");
 	}
 	
 	public static UserBuilder emptyUserBuilder() {
@@ -56,10 +50,7 @@ public class TestUserBuilder {
 	
 	public static UserCreateDto createDto() {
 		UserCreateDto dto = new UserCreateDto();
-		dto.setUsername(USERNAME);
-		dto.setPassword(PASSWORD);
 		dto.setEmail(EMAIL);
-		dto.setIsBlocked(UNBLOCKED);
 		dto.setFirstName(FIRSTNAME);
 		dto.setLastName(LASTNAME);
 		return dto ;

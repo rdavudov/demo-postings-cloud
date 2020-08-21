@@ -1,42 +1,26 @@
 [
 	{	
 		"id": "testid",
-		"username": "testuser",
-		"password": "testtest",
 		"email": "test@test.com",
 		"firstName": "firsttest",
-		"lastName": "lasttest",		
-		"isBlocked": false,
-		"version": 1
+		"lastName": "lasttest"
 	}
 	,{
 		"id": "testid2",
-		"username": "testuser2",
-		"password": "testtest",
 		"email": "test2@test.com",
 		"firstName": "firsttest",
-		"lastName": "lasttest",		
-		"isBlocked": true,
-		"version": 1
+		"lastName": "lasttest"
 	}
 	,{
 		"id": "testid3",
-		"username": "testuser3",
-		"password": "testtest",
 		"email": "test3@test.com",
 		"firstName": "firsttest",
-		"lastName": "lasttest",		
-		"isBlocked": true,
-		"version": 1
+		"lastName": "lasttest"
 	}
 	,{
 		"id": "testid4",
-		"username": "testuser4",
-		"password": "testtest",
 		"email": "test4@test.com",
 		"firstName": "firsttest",
-		"lastName": "lasttest",		
-		"isBlocked": true,
-		"version": 1
+		"lastName": "lasttest"
 	}		
 ]

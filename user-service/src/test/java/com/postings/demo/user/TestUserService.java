@@ -19,7 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.postings.demo.user.dto.UserCreateDto;
 import com.postings.demo.user.dto.UserUpdateDto;
 import com.postings.demo.user.model.User;
-import com.postings.demo.user.repository.UserRepositoy;
+import com.postings.demo.user.repository.UserRepository;
 import com.postings.demo.user.service.UserService;
 
 @SpringBootTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
@@ -30,7 +30,7 @@ public class TestUserService {
 	private UserService service ;
 	
 	@MockBean
-	private UserRepositoy repository ;
+	private UserRepository repository ;
 	
 	@Test
 	@DisplayName("find user by id Success")
@@ -49,14 +49,6 @@ public class TestUserService {
 	}
 	
 	@Test
-	@DisplayName("find user by username Success")
-	public void testFindUserByUsernameSuccess() {
-		doReturn(Optional.of(fullUser())).when(repository).findByUsername(USERNAME) ;
-		Optional<User> user = service.findByUsername(USERNAME) ;
-		assertThat(user).withFailMessage("User had to be found").isPresent() ;
-	}
-	
-	@Test
 	@DisplayName("find user by email Success")
 	public void testFindUserByEmailSuccess() {
 		doReturn(Optional.of(fullUser())).when(repository).findByEmail(EMAIL) ;
@@ -72,10 +64,7 @@ public class TestUserService {
 		User savedUser = service.save(newDto);
 		assertThat(savedUser).withFailMessage("User must be not null").isNotNull() ;
 		assertThat(savedUser.getId()).withFailMessage("id failed").isNotNull().isEqualTo(ID) ;
-		assertThat(savedUser.getUsername()).withFailMessage("username failed").isNotNull().isEqualTo(USERNAME) ;
-		assertThat(savedUser.getPassword()).withFailMessage("password failed").isNotNull().isEqualTo(PASSWORD) ;
 		assertThat(savedUser.getEmail()).withFailMessage("email failed").isNotNull().isEqualTo(EMAIL) ;
-		assertThat(savedUser.getVersion()).withFailMessage("version failed").isNotNull().isEqualTo(VERSION) ;
 	}
 	
 	
@@ -94,12 +83,9 @@ public class TestUserService {
 		User savedUser = user.get() ;
 		assertThat(savedUser).withFailMessage("User must be not null").isNotNull() ;
 		assertThat(savedUser.getId()).withFailMessage("id failed").isNotNull().isEqualTo(ID) ;
-		assertThat(savedUser.getUsername()).withFailMessage("username failed").isNotNull().isEqualTo(USERNAME) ;
-		assertThat(savedUser.getPassword()).withFailMessage("password failed").isNotNull().isEqualTo(PASSWORD) ;
 		assertThat(savedUser.getEmail()).withFailMessage("email failed").isNotNull().isEqualTo(EMAIL) ;
 		assertThat(savedUser.getFirstName()).withFailMessage("firstname failed").isNotNull().isEqualTo(FIRSTNAME) ;
 		assertThat(savedUser.getLastName()).withFailMessage("lastname failed").isNotNull().isEqualTo(DTO_LASTNAME) ;
-		assertThat(savedUser.getVersion()).withFailMessage("version failed").isNotNull().isEqualTo(VERSION + 1) ;
 	}
 	
 	@Test

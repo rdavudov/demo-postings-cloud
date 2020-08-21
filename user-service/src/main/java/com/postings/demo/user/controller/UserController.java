@@ -35,13 +35,13 @@ import lombok.extern.slf4j.Slf4j;
 import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
-@RequestMapping("${service.base.uri}")
+@RequestMapping("${service.base.uri}/users")
 @Slf4j
 @Api("Users")
 public class UserController {
 	
-	@Value("${service.base.uri}")
-	public String BASE_URI ;
+	@Value("${service.base.uri}/users")
+	private String baseUri ;
 	
 	@Autowired
 	private UserService service ;
@@ -59,8 +59,7 @@ public class UserController {
 		try {
 			User saved = service.save(user) ;
 			return ResponseEntity
-					.created(new URI(BASE_URI + "/" + saved.getId()))
-					.eTag(Integer.toString(saved.getVersion()))
+					.created(new URI(baseUri + "/" + saved.getId()))
 					.body(saved);
 		} catch (Exception e) {
 			log.error("exception for input {}", new Object[] {user}, e);
@@ -75,8 +74,7 @@ public class UserController {
 				try {
 					return ResponseEntity
 							.ok()
-							.eTag(Integer.toString(user.getVersion()))
-							.location(new URI(BASE_URI + "/" + user.getId()))
+							.location(new URI(baseUri + "/" + user.getId()))
 							.body(user) ;
 				} catch (Exception e) {
 					log.error("exception for input {}", new Object[] {user}, e);
@@ -105,8 +103,7 @@ public class UserController {
 			try {
 				return ResponseEntity
 						.ok()
-						.eTag(Integer.toString(user.getVersion()))
-						.location(new URI(BASE_URI + "/" + user.getId()))
+						.location(new URI(baseUri + "/" + user.getId()))
 						.body(user) ;
 			} catch (Exception e) {
 				log.error("exception for input {}", new Object[] {user}, e);

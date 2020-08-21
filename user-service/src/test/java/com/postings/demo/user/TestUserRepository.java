@@ -23,14 +23,14 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import com.postings.demo.user.extension.MongoDataFile;
 import com.postings.demo.user.extension.MongoExtension;
 import com.postings.demo.user.model.User;
-import com.postings.demo.user.repository.UserRepositoy;
+import com.postings.demo.user.repository.UserRepository;
 
 @DataMongoTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
 @ExtendWith(MongoExtension.class)
 public class TestUserRepository {
 	
 	@Autowired
-	private UserRepositoy repository ;
+	private UserRepository repository ;
 	
 	@Autowired
 	private MongoTemplate mongoTemplate ;
@@ -64,14 +64,6 @@ public class TestUserRepository {
 	}
 	
 	@Test
-	@DisplayName("test find by id repository Success")
-	@MongoDataFile(value = "users2.json", classType = User.class, collectionName = "Users")
-	public void testFindByUsernameSuccess() {
-		Optional<User> user = repository.findByUsername(USERNAME) ;
-		assertThat(user).withFailMessage("user must be found").isPresent() ;
-	}
-	
-	@Test
 	@DisplayName("test find by username repository Success")
 	@MongoDataFile(value = "users2.json", classType = User.class, collectionName = "Users")
 	public void testFindByEmailSuccess() {
@@ -89,10 +81,7 @@ public class TestUserRepository {
 		assertThat(user).withFailMessage("user must be found").isPresent() ;
 		User savedUser = user.get() ;
 		assertThat(savedUser.getId()).isEqualTo(ID) ;
-		assertThat(savedUser.getUsername()).isEqualTo(USERNAME) ;
-		assertThat(savedUser.getPassword()).isEqualTo(PASSWORD) ;
 		assertThat(savedUser.getEmail()).isEqualTo(EMAIL) ;
-		assertThat(savedUser.getVersion()).isEqualTo(VERSION) ;
 	}
 	
 	@Test
@@ -116,10 +105,7 @@ public class TestUserRepository {
 		assertThat(user).withFailMessage("user must be found").isPresent() ;
 		User savedUser = user.get() ;
 		assertThat(savedUser.getId()).isEqualTo(ID) ;
-		assertThat(savedUser.getUsername()).isEqualTo(USERNAME) ;
-		assertThat(savedUser.getPassword()).isEqualTo(PASSWORD) ;
 		assertThat(savedUser.getEmail()).isEqualTo(modifiedEmail) ;
-		assertThat(savedUser.getVersion()).isEqualTo(VERSION) ;
 	}
 	
 	@Test
@@ -130,16 +116,5 @@ public class TestUserRepository {
 		
 		Optional<User> user = repository.findById(ID) ;
 		assertThat(user).withFailMessage("user must not be found").isEmpty() ;
-	}
-	
-	@Test
-	@DisplayName("test find all blocked repository Success")
-	@MongoDataFile(value = "users2.json", classType = User.class, collectionName = "Users")
-	public void testFindAllBlocked() {
-		User userBlocked = new User() ;
-		userBlocked.setIsBlocked(true);
-		
-		List<User> users = repository.findAll(Example.of(userBlocked)) ;
-		assertThat(users).withFailMessage("list size must be 1").hasSize(1) ;
 	}
 }

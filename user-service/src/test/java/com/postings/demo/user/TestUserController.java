@@ -52,30 +52,25 @@ public class TestUserController {
 	@Test
 	@DisplayName("GET /users/{id}> Success")
 	public void testGetUserSuccess() throws Exception {
-		User existingUser = testUserBuilder().id(ID).version(VERSION).build() ;
+		User existingUser = testUserBuilder().id(ID).build() ;
 		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
 		
 		mockMvc.perform(get(getBaseUrl() + "/{id}", ID))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"1\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + existingUser.getId()))
 			.andExpect(jsonPath("$.id", is(existingUser.getId())))
-			.andExpect(jsonPath("$.username", is(existingUser.getUsername())))
-			.andExpect(jsonPath("$.password", is(existingUser.getPassword())))
 			.andExpect(jsonPath("$.firstName", is(existingUser.getFirstName())))
 			.andExpect(jsonPath("$.lastName", is(existingUser.getLastName())))
-			.andExpect(jsonPath("$.email", is(existingUser.getEmail())))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
-			.andExpect(jsonPath("$.version", is(existingUser.getVersion())));
+			.andExpect(jsonPath("$.email", is(existingUser.getEmail())));
 	}
 	
 	@Test
 	@DisplayName("POST /users Success")
 	public void testCreateUserSuccess() throws Exception {
 		User user = testUserBuilder().build() ;
-		User savedUser = testUserBuilder().id(ID).version(VERSION).build() ;
+		User savedUser = testUserBuilder().id(ID).build() ;
 		
 		doReturn(savedUser).when(userService).save(any()) ;
 		
@@ -85,16 +80,11 @@ public class TestUserController {
 			.andExpect(status().isCreated())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"1\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + savedUser.getId()))
 			.andExpect(jsonPath("$.id", org.hamcrest.CoreMatchers.any(String.class)))
-			.andExpect(jsonPath("$.username", is(user.getUsername())))
-			.andExpect(jsonPath("$.password", is(user.getPassword())))
 			.andExpect(jsonPath("$.email", is(user.getEmail())))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$.firstName", is(user.getFirstName())))
-			.andExpect(jsonPath("$.lastName", is(user.getLastName())))
-			.andExpect(jsonPath("$.version", is(1)));
+			.andExpect(jsonPath("$.lastName", is(user.getLastName())));
 	}
 	
 	@Test
@@ -128,7 +118,6 @@ public class TestUserController {
 	@Test
 	@DisplayName("POST /users Fail Existing Username")
 	public void testCreateUserFailExitingUsername() throws Exception {
-		doReturn(Optional.of(testUser())).when(userService).findByUsername(USERNAME) ;
 		
 		Map<String, Object> params = new HashMap<>() ;
 		params.put("email", EMAIL) ;
@@ -198,36 +187,6 @@ public class TestUserController {
 	}
 	
 	@Test
-	@DisplayName("GET /users?username=testuser Success")
-	public void testFindUserByUsernameSuccess() throws Exception {
-		doReturn(List.of(fullUser())).when(userService).find(org.mockito.Mockito.any()) ;
-		
-		mockMvc.perform(get(getBaseUrl() + "?username={username}", USERNAME))
-			.andExpect(status().isOk())
-			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.length()", is(1)))
-			.andExpect(jsonPath("$[0].id", is(ID)))
-			.andExpect(jsonPath("$[0].username", is(USERNAME)))
-			.andExpect(jsonPath("$[0].password", is(PASSWORD)))
-			.andExpect(jsonPath("$[0].email", is(EMAIL)))
-			.andExpect(jsonPath("$[0].isBlocked", is(UNBLOCKED)))
-			.andExpect(jsonPath("$[0].firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$[0].lastName", is(LASTNAME)))
-			.andExpect(jsonPath("$[0].version", is(VERSION)));
-	}
-	
-	@Test
-	@DisplayName("GET /users?username=testuser Not Found")
-	public void testFindUserByUsernameNotFound() throws Exception {
-		doReturn(List.of()).when(userService).find(org.mockito.Mockito.any()) ;
-		
-		mockMvc.perform(get(getBaseUrl() + "?username={username}", USERNAME))
-			.andExpect(status().isOk())
-			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.length()", is(0))) ;
-	}
-	
-	@Test
 	@DisplayName("GET /users Success")
 	public void testFindUsersSuccess() throws Exception {
 		doReturn(List.of(fullUser(), fullUserBuilder().id(ID + "2").build())).when(userService).findAll() ;
@@ -237,21 +196,13 @@ public class TestUserController {
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			.andExpect(jsonPath("$.length()", is(2)))
 			.andExpect(jsonPath("$[0].id", is(ID)))
-			.andExpect(jsonPath("$[0].username", is(USERNAME)))
-			.andExpect(jsonPath("$[0].password", is(PASSWORD)))
 			.andExpect(jsonPath("$[0].email", is(EMAIL)))
-			.andExpect(jsonPath("$[0].isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$[0].firstName", is(FIRSTNAME)))
 			.andExpect(jsonPath("$[0].lastName", is(LASTNAME)))			
-			.andExpect(jsonPath("$[0].version", is(VERSION)))
 			.andExpect(jsonPath("$[1].id", is(ID + "2")))
-			.andExpect(jsonPath("$[1].username", is(USERNAME)))
-			.andExpect(jsonPath("$[1].password", is(PASSWORD)))
 			.andExpect(jsonPath("$[1].email", is(EMAIL)))
-			.andExpect(jsonPath("$[1].isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$[1].firstName", is(FIRSTNAME)))
 			.andExpect(jsonPath("$[1].lastName", is(LASTNAME)))			
-			.andExpect(jsonPath("$[1].version", is(VERSION)))			
 			.andReturn();
 	}
 	
@@ -260,8 +211,8 @@ public class TestUserController {
 	public void testUpdateUserSuccess() throws Exception {
 		UserUpdateDto dto = new UserUpdateDto() ;
 		dto.setLastName(DTO_LASTNAME);
-		User existingUser = testUserBuilder().id(ID).version(VERSION).build() ;
-		User updatedUser = testUserBuilder().id(ID).version(VERSION + 1).lastname(DTO_LASTNAME).build() ;
+		User existingUser = testUserBuilder().id(ID).build() ;
+		User updatedUser = testUserBuilder().id(ID).lastname(DTO_LASTNAME).build() ;
 		
 		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
 		doReturn(Optional.of(updatedUser)).when(userService).update(ID, dto) ;
@@ -272,28 +223,11 @@ public class TestUserController {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"2\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + existingUser.getId()))
 			.andExpect(jsonPath("$.id", org.hamcrest.CoreMatchers.any(String.class)))
-			.andExpect(jsonPath("$.username", is(updatedUser.getUsername())))
-			.andExpect(jsonPath("$.password", is(updatedUser.getPassword())))
 			.andExpect(jsonPath("$.email", is(updatedUser.getEmail())))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$.firstName", is(updatedUser.getFirstName())))
-			.andExpect(jsonPath("$.lastName", is(updatedUser.getLastName())))
-			.andExpect(jsonPath("$.version", is(2)));
-	}
-	
-	@Test
-	@DisplayName("PUT /users Failed email validation")
-	public void testUpdateUserFailedEmailValidation() throws Exception {
-		UserUpdateDto dto = new UserUpdateDto() ;
-		dto.setPassword("123");
-		
-		mockMvc.perform(put(getBaseUrl() + "/{id}", ID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(dto.toString()))
-			.andExpect(status().isBadRequest());
+			.andExpect(jsonPath("$.lastName", is(updatedUser.getLastName())));
 	}
 	
 	@Test

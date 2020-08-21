@@ -10,8 +10,6 @@ import com.postings.demo.user.model.User;
 public interface UserService {
 	Optional<User> findById(String id) ;
 	
-	Optional<User> findByUsername(String username) ;
-	
 	Optional<User> findByEmail(String email) ;
 	
 	List<User> findAll() ;

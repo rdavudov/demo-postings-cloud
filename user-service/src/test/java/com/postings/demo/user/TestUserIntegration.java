@@ -6,9 +6,6 @@ import static com.postings.demo.user.builder.TestUserBuilder.EMAIL;
 import static com.postings.demo.user.builder.TestUserBuilder.FIRSTNAME;
 import static com.postings.demo.user.builder.TestUserBuilder.ID;
 import static com.postings.demo.user.builder.TestUserBuilder.LASTNAME;
-import static com.postings.demo.user.builder.TestUserBuilder.PASSWORD;
-import static com.postings.demo.user.builder.TestUserBuilder.UNBLOCKED;
-import static com.postings.demo.user.builder.TestUserBuilder.USERNAME;
 import static com.postings.demo.user.builder.TestUserBuilder.testUserBuilder;
 import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.is;
@@ -61,16 +58,11 @@ public class TestUserIntegration {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"1\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" +ID))
 			.andExpect(jsonPath("$.id", is(ID)))
-			.andExpect(jsonPath("$.username", is(USERNAME)))
-			.andExpect(jsonPath("$.password", is(PASSWORD)))
 			.andExpect(jsonPath("$.email", is(EMAIL)))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$.firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$.lastName", is(LASTNAME)))
-			.andExpect(jsonPath("$.version", is(1)));
+			.andExpect(jsonPath("$.lastName", is(LASTNAME)));
 	}
 	
 	@Test
@@ -85,24 +77,19 @@ public class TestUserIntegration {
 			.andExpect(status().isCreated())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"1\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, any(String.class)))
 			.andExpect(jsonPath("$.id", any(String.class)))
 			.andExpect(jsonPath("$.id", not(ID)))
-			.andExpect(jsonPath("$.username", is(user.getUsername())))
-			.andExpect(jsonPath("$.password", is(user.getPassword())))
 			.andExpect(jsonPath("$.email", is(user.getEmail())))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$.firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$.lastName", is(LASTNAME)))			
-			.andExpect(jsonPath("$.version", is(1)));
+			.andExpect(jsonPath("$.lastName", is(LASTNAME)));
 	}
 	
 	@Test
 	@DisplayName("POST /users Success")
 	@MongoDataFile(value = "users0.json", classType = User.class, collectionName = "Users")
 	public void testCreateFullUserSuccess() throws Exception {
-		User user = testUserBuilder().id(ID).version(2).build() ;
+		User user = testUserBuilder().id(ID).build() ;
 		
 		mockMvc.perform(post(getBaseUrl())
 				.contentType(MediaType.APPLICATION_JSON)
@@ -110,17 +97,12 @@ public class TestUserIntegration {
 			.andExpect(status().isCreated())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"1\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, any(String.class)))
 			.andExpect(jsonPath("$.id", any(String.class)))
 			.andExpect(jsonPath("$.id", not(ID)))
-			.andExpect(jsonPath("$.username", is(user.getUsername())))
-			.andExpect(jsonPath("$.password", is(user.getPassword())))
 			.andExpect(jsonPath("$.email", is(user.getEmail())))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
 			.andExpect(jsonPath("$.firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$.lastName", is(LASTNAME)))
-			.andExpect(jsonPath("$.version", is(1)));
+			.andExpect(jsonPath("$.lastName", is(LASTNAME)));
 	}
 	
 	@Test
@@ -136,16 +118,11 @@ public class TestUserIntegration {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"2\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + ID))
 			.andExpect(jsonPath("$.id", any(String.class)))
-			.andExpect(jsonPath("$.username", is(USERNAME)))
-			.andExpect(jsonPath("$.password", is(PASSWORD)))
 			.andExpect(jsonPath("$.email", is(EMAIL)))
 			.andExpect(jsonPath("$.firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$.lastName", is(DTO_LASTNAME)))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
-			.andExpect(jsonPath("$.version", is(2)));
+			.andExpect(jsonPath("$.lastName", is(DTO_LASTNAME)));
 	}
 	
 	@Test
@@ -155,7 +132,6 @@ public class TestUserIntegration {
 		User user = testUserBuilder().build() ;
 		user.setLastName(DTO_LASTNAME);
 		user.setId(ID + "123");
-		user.setUsername(USERNAME + "123");
 		user.setEmail(EMAIL + "123");
 		
 		mockMvc.perform(put(getBaseUrl() + "/{id}", ID)
@@ -164,29 +140,11 @@ public class TestUserIntegration {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
-			.andExpect(header().string(HttpHeaders.ETAG, "\"2\""))
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + ID))
 			.andExpect(jsonPath("$.id", not(ID + "123")))
-			.andExpect(jsonPath("$.username", not(USERNAME + "123")))
-			.andExpect(jsonPath("$.password", is(PASSWORD)))
 			.andExpect(jsonPath("$.email", not(EMAIL + "123")))
 			.andExpect(jsonPath("$.firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$.lastName", is(DTO_LASTNAME)))
-			.andExpect(jsonPath("$.isBlocked", is(UNBLOCKED)))
-			.andExpect(jsonPath("$.version", is(2)));
-	}
-	
-	@Test
-	@DisplayName("PUT /users Fail Password invalid")
-	@MongoDataFile(value = "users2.json", classType = User.class, collectionName = "Users")
-	public void testUpdateUserFailPasswordInvalid() throws Exception {
-		UserUpdateDto dto = new UserUpdateDto() ;
-		dto.setPassword("123");
-		
-		mockMvc.perform(put(getBaseUrl() + "/{id}", ID)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(dto.toString()))
-			.andExpect(status().isBadRequest());
+			.andExpect(jsonPath("$.lastName", is(DTO_LASTNAME)));
 	}
 	
 	@Test
@@ -205,15 +163,5 @@ public class TestUserIntegration {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			.andExpect(jsonPath("$.length()", is(4)));
-	}
-	
-	@Test
-	@DisplayName("GET /users Success")
-	@MongoDataFile(value = "users4.json", classType = User.class, collectionName = "Users")
-	public void testGetAllBlockedUsersSuccess() throws Exception {
-		mockMvc.perform(get(getBaseUrl() + "?isBlocked={isBlocked}", "true"))
-			.andExpect(status().isOk())
-			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.length()", is(3)));
 	}
 }
