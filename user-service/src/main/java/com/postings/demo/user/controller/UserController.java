@@ -1,8 +1,7 @@
 package com.postings.demo.user.controller;
 
 import java.net.URI;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -10,29 +9,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.postings.demo.user.dto.UserCreateDto;
+import com.postings.demo.user.dto.UserGetDto;
 import com.postings.demo.user.dto.UserUpdateDto;
+import com.postings.demo.user.helper.OidcUtility;
+import com.postings.demo.user.mapper.UserMapper;
 import com.postings.demo.user.model.User;
+import com.postings.demo.user.model.UserStats;
 import com.postings.demo.user.service.UserService;
+import com.postings.demo.user.service.UserStatsService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping("${service.base.uri}/users")
@@ -44,87 +44,104 @@ public class UserController {
 	private String baseUri ;
 	
 	@Autowired
-	private UserService service ;
+	private UserService userService ;
+	
+	@Autowired
+	private UserStatsService userStatsService ;
+	
+	@Autowired
+	private UserMapper userMapper ;
 	
 	@PostMapping
 	@ApiOperation("create a new user")
-	public ResponseEntity<?> createUser(@Valid @RequestBody UserCreateDto user, @ApiIgnore Errors errors) {
-		if (errors.hasErrors()) {
-			String validationFailReason = errors.getAllErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.joining(", ")) ;
-			log.error("user validation failed for request {} with validations {}", user, validationFailReason);
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, validationFailReason) ;
+	public ResponseEntity<?> createUser(@AuthenticationPrincipal JwtAuthenticationToken jwt) {
+		OidcUser oidcUser = OidcUtility.getOidcUserFromJwt(jwt) ;
+
+		if (!oidcUser.getEmailVerified()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build() ;
 		}
 		
-		log.info("saving user {}", user);
-		try {
-			User saved = service.save(user) ;
-			return ResponseEntity
-					.created(new URI(baseUri + "/" + saved.getId()))
-					.body(saved);
-		} catch (Exception e) {
-			log.error("exception for input {}", new Object[] {user}, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
-		}
+		return userService.findById(oidcUser.getSubject()).map(u -> {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build() ;
+		}).orElseGet(() -> {
+			try {
+				User saved = userService.save(getUserDto(oidcUser)) ;
+				return ResponseEntity
+						.created(new URI(baseUri + "/" + saved.getId()))
+						.body(userMapper.mapUserToDto(saved));
+			} catch (Exception e) {
+				log.error("exception in creating user {}", new Object[] {oidcUser.getEmail()}, e);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
+			}
+		}) ;
 	}
 	
 	@GetMapping("/{id}")
 	@ApiOperation("get user by id")
-	public ResponseEntity<?> getUser(@PathVariable("id") String id) {
-		return service.findById(id).map(user -> {
+	public ResponseEntity<?> getUser(@PathVariable("id") String id, @AuthenticationPrincipal JwtAuthenticationToken token) {
+		OidcUser oidcUser = OidcUtility.getOidcUserFromJwt(token) ;
+		
+		if (!id.equals(oidcUser.getSubject())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build() ;
+		}
+		
+		return userService.findById(oidcUser.getSubject()).map(user -> {
 				try {
+					UserGetDto getDto = userMapper.mapUserToDto(user) ;
+					
+					Optional<UserStats> stats = userStatsService.findById(oidcUser.getSubject()) ;
+					if (stats.isPresent()) {
+						getDto.setStats(stats.get());
+					} else {
+						getDto.setStats(new UserStats());
+					}
+					
 					return ResponseEntity
 							.ok()
 							.location(new URI(baseUri + "/" + user.getId()))
-							.body(user) ;
+							.body(getDto) ;
 				} catch (Exception e) {
 					log.error("exception for input {}", new Object[] {user}, e);
 					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
 				}
-		}).orElse(ResponseEntity.notFound().build()) ;
-	}
-	
-	@GetMapping
-	@ApiOperation("get all users or filter users")
-	public Iterable<User> getUsers(@RequestParam Map<String, Object> params) {
-		if (params.size() == 0) {
-			return service.findAll() ;
-		} else {
-			User user = new ObjectMapper().convertValue(params, User.class) ;
-			return service.find(user) ;
-		}
+		}).orElseGet(() -> {
+			try {
+				User saved = userService.save(getUserDto(oidcUser)) ;
+				return ResponseEntity
+						.ok()
+						.location(new URI(baseUri + "/" + saved.getId()))
+						.body(userMapper.mapUserToDto(saved));
+			} catch (Exception e) {
+				log.error("exception in creating user {}", new Object[] {oidcUser.getEmail()}, e);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
+			}
+		}) ;
 	}
 	
 	@PutMapping("/{id}")
 	@ApiOperation("update an existing user")
-	public ResponseEntity<?> updateUser(@Valid @RequestBody UserUpdateDto dto, @PathVariable("id") String id, @ApiIgnore Errors errors) {
-		log.info("updating user {} with data {}", id, dto.toString());
+	public ResponseEntity<?> updateUser(@PathVariable("id") String id, @Valid @RequestBody UserUpdateDto dto, @AuthenticationPrincipal JwtAuthenticationToken token) {
+		OidcUser oidcUser = OidcUtility.getOidcUserFromJwt(token) ;
 		
-		return service.update(id, dto).map(user -> {
+		if (!id.equals(oidcUser.getSubject())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build() ;
+		}
+		
+		return userService.update(oidcUser.getSubject(), dto).map(user -> {
 			try {
 				return ResponseEntity
 						.ok()
 						.location(new URI(baseUri + "/" + user.getId()))
-						.body(user) ;
+						.body(userMapper.mapUserToDto(user)) ;
 			} catch (Exception e) {
 				log.error("exception for input {}", new Object[] {user}, e);
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
 			}
 		}).orElse(ResponseEntity.notFound().build()) ;
 	}
+
 	
-	@DeleteMapping("/{id}")
-	@ApiOperation("delete a user")
-	public ResponseEntity<?> deleteUser(@PathVariable("id") String id) {
-		return service.findById(id).map(user -> {
-			try {
-				service.delete(id) ;
-				return ResponseEntity.noContent().build() ;
-			} catch (Exception e) {
-				log.error("exception for input {}", new Object[] {user}, e);
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
-			}
-		}).orElse(ResponseEntity.notFound().build()) ;
+	private UserCreateDto getUserDto(OidcUser oidcUser) {
+		return new UserCreateDto(oidcUser.getSubject(), oidcUser.getEmail(), oidcUser.getGivenName(), oidcUser.getFamilyName(), oidcUser.getPicture()) ;
 	}
-	
-	//TODO: use also AdviceController for more complicated exception handling
 }

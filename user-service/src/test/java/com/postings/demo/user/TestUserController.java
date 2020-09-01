@@ -1,12 +1,15 @@
 package com.postings.demo.user;
 
-import static com.postings.demo.user.builder.TestUserBuilder.*;
-import static org.hamcrest.CoreMatchers.any;
+import static com.postings.demo.user.builder.TestUserBuilder.DTO_LASTNAME;
+import static com.postings.demo.user.builder.TestUserBuilder.ID;
+import static com.postings.demo.user.builder.TestUserBuilder.OTHER_ID;
+import static com.postings.demo.user.builder.TestUserBuilder.testUserBuilder;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -14,69 +17,152 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static com.postings.demo.user.utility.JacksonUtility.toJson;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.postings.demo.user.builder.TestJwtBuilder;
 import com.postings.demo.user.dto.UserUpdateDto;
 import com.postings.demo.user.model.User;
+import com.postings.demo.user.model.UserStats;
 import com.postings.demo.user.service.UserService;
+import com.postings.demo.user.service.UserStatsService;
 
 @SpringBootTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
+@TestPropertySource("classpath:test.properties")
 public class TestUserController {
 	@Autowired
 	private MockMvc mockMvc ;
 	
 	@MockBean
 	private UserService userService ;
+	
+	@MockBean
+	private UserStatsService userStatsService ;
+	
+	@Value("${service.base.uri}")
+	private String baseUri ;
 
+	@Value("${jwt.secret}")
+	private String secret ;
+	
+	private TestJwtBuilder jwtBuilder ;
+	
+	@BeforeEach
+	public void setUp() {
+		jwtBuilder = new TestJwtBuilder(secret) ;
+	}
+	
 	@Test
-	@DisplayName("GET /users/{id}> Success")
-	public void testGetUserSuccess() throws Exception {
+	public void givenUserWhenGetThenSuccess() throws Exception {
 		User existingUser = testUserBuilder().id(ID).build() ;
-		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
 		
-		mockMvc.perform(get(getBaseUrl() + "/{id}", ID))
+		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
+		doReturn(Optional.empty()).when(userStatsService).findById(ID) ;
+
+		mockMvc.perform(get(getBaseUrl() + "/{id}", ID).header("Authorization", "Bearer " + jwtBuilder.jwt(existingUser)))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			
 			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + existingUser.getId()))
 			.andExpect(jsonPath("$.id", is(existingUser.getId())))
 			.andExpect(jsonPath("$.firstName", is(existingUser.getFirstName())))
 			.andExpect(jsonPath("$.lastName", is(existingUser.getLastName())))
+			.andExpect(jsonPath("$.picture", is(existingUser.getPicture())))
+			.andExpect(jsonPath("$.stats").exists())
+			.andExpect(jsonPath("$.stats.posts", is(0)))
+			.andExpect(jsonPath("$.stats.following", is(0)))
+			.andExpect(jsonPath("$.stats.followers", is(0)))
 			.andExpect(jsonPath("$.email", is(existingUser.getEmail())));
 	}
 	
 	@Test
-	@DisplayName("POST /users Success")
-	public void testCreateUserSuccess() throws Exception {
-		User user = testUserBuilder().build() ;
+	public void givenMissingUserWhenGetThenCreateUser() throws Exception {
+		User newUser = testUserBuilder().id(ID).build() ;
+		
+		doReturn(Optional.empty()).when(userService).findById(ID) ;
+		doReturn(newUser).when(userService).save(any()) ;
+
+		mockMvc.perform(get(getBaseUrl() + "/{id}", ID).header("Authorization", "Bearer " + jwtBuilder.jwt(newUser)))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + newUser.getId()))
+			.andExpect(jsonPath("$.id", is(newUser.getId())))
+			.andExpect(jsonPath("$.firstName", is(newUser.getFirstName())))
+			.andExpect(jsonPath("$.lastName", is(newUser.getLastName())))
+			.andExpect(jsonPath("$.picture", is(newUser.getPicture())))
+			.andExpect(jsonPath("$.email", is(newUser.getEmail())));
+		
+		verify(userService).save(any()) ;
+	}
+	
+	@Test
+	public void givenUserWithStatsWhenGetThenSuccess() throws Exception {
+		User existingUser = testUserBuilder().id(ID).build() ;
+		UserStats userStats = new UserStats() ;
+		userStats.setId(ID);
+		userStats.setPosts(5);
+		
+		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
+		doReturn(Optional.of(userStats)).when(userStatsService).findById(ID) ;
+
+		mockMvc.perform(get(getBaseUrl() + "/{id}", ID).header("Authorization", "Bearer " + jwtBuilder.jwt(existingUser)))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + existingUser.getId()))
+			.andExpect(jsonPath("$.id", is(existingUser.getId())))
+			.andExpect(jsonPath("$.firstName", is(existingUser.getFirstName())))
+			.andExpect(jsonPath("$.lastName", is(existingUser.getLastName())))
+			.andExpect(jsonPath("$.picture", is(existingUser.getPicture())))
+			.andExpect(jsonPath("$.stats").exists())
+			.andExpect(jsonPath("$.stats.posts", is(5)))
+			.andExpect(jsonPath("$.stats.following", is(0)))
+			.andExpect(jsonPath("$.stats.followers", is(0)))
+			.andExpect(jsonPath("$.email", is(existingUser.getEmail())));
+	}
+	
+	@Test
+	public void givenUserWhenGetOtherUserThenSuccess() throws Exception {
+		User existingUser = testUserBuilder().id(ID).build() ;
+		
+		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
+
+		mockMvc.perform(get(getBaseUrl() + "/{id}", OTHER_ID).header("Authorization", "Bearer " + jwtBuilder.jwt(existingUser)))
+			.andExpect(status().isForbidden()) ;
+	}
+	
+	@Test
+	public void givenUserWhenOtherIdThenUnauthorized() throws Exception {
+		User user = testUserBuilder().id(ID).build() ;
+		
+		mockMvc.perform(get(getBaseUrl() + "/{id}", OTHER_ID).header("Authorization", "Bearer " + jwtBuilder.jwt(user)))
+			.andExpect(status().isForbidden()) ;
+	}
+	
+	@Test
+	public void givenUserWhenSavedThenSuccess() throws Exception {
+		User user = testUserBuilder().id(ID).build() ;
 		User savedUser = testUserBuilder().id(ID).build() ;
 		
 		doReturn(savedUser).when(userService).save(any()) ;
 		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(user.toString()))
+		mockMvc.perform(post(getBaseUrl()).header("Authorization", "Bearer " + jwtBuilder.jwt(user)))
 			.andExpect(status().isCreated())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			
@@ -84,131 +170,67 @@ public class TestUserController {
 			.andExpect(jsonPath("$.id", org.hamcrest.CoreMatchers.any(String.class)))
 			.andExpect(jsonPath("$.email", is(user.getEmail())))
 			.andExpect(jsonPath("$.firstName", is(user.getFirstName())))
+			.andExpect(jsonPath("$.picture", is(user.getPicture())))
 			.andExpect(jsonPath("$.lastName", is(user.getLastName())));
 	}
 	
 	@Test
-	@DisplayName("POST /users Fail with Exception")
-	public void testCreateUserFailWithException() throws Exception {
-		User user = testUserBuilder().build() ;
+	public void givenUserWhenExceptionInSaveThenFailure() throws Exception {
+		User user = testUserBuilder().id(ID).build() ;
 		
 		doThrow(RuntimeException.class).when(userService).save(any()) ;
 		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(user.toString()))
+		mockMvc.perform(post(getBaseUrl()).header("Authorization", "Bearer " + jwtBuilder.jwt(user)))
 			.andExpect(status().isInternalServerError());
 	}
-	
+
+		
 	@Test
-	@DisplayName("POST /users Fail Missing Username")
-	public void testCreateUserFailMissingUsername() throws Exception {
-		Map<String, Object> params = new HashMap<>() ;
-		params.put("email", EMAIL) ;
-		params.put("password", PASSWORD) ;
+	public void givenExistingUserWhenSavedThenFailure() throws Exception {
+		User user = testUserBuilder().id(ID).build() ;
+		User existingUser = testUserBuilder().id(ID).build() ;
 		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectAsJsonString(params)))
-			.andExpect(status().isBadRequest());
-	}
-	
-	
-	
-	@Test
-	@DisplayName("POST /users Fail Existing Username")
-	public void testCreateUserFailExitingUsername() throws Exception {
+		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
 		
-		Map<String, Object> params = new HashMap<>() ;
-		params.put("email", EMAIL) ;
-		params.put("username", USERNAME) ;
-		params.put("password", PASSWORD) ;
-		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectAsJsonString(params)))
+		mockMvc.perform(post(getBaseUrl()).header("Authorization", "Bearer " + jwtBuilder.jwt(user)))
 			.andExpect(status().isBadRequest()) ;
 	}
 	
 	@Test
-	@DisplayName("POST /users Fail Missing Password")
-	public void testCreateUserFailMissingPassword() throws Exception {
-		Map<String, Object> params = new HashMap<>() ;
-		params.put("email", EMAIL) ;
-		params.put("username", USERNAME) ;
+	public void givenUserNotVerifiedEmailWhenSavedThenFailure() throws Exception {
+		User user = testUserBuilder().id(ID).build() ;
+		jwtBuilder.emailVerified(false) ;
 		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectAsJsonString(params)))
+		mockMvc.perform(post(getBaseUrl()).header("Authorization", "Bearer " + jwtBuilder.jwt(user)))
 			.andExpect(status().isBadRequest());
 	}
 	
 	@Test
-	@DisplayName("POST /users Fail Missing Email")
-	public void testCreateUserFailMissingEmail() throws Exception {
-		Map<String, Object> params = new HashMap<>() ;
-		params.put("username", USERNAME) ;
-		params.put("password", PASSWORD) ;
+	public void givenUserWhenUpdatedThenSuccess() throws Exception {
+		UserUpdateDto dto = new UserUpdateDto() ;
+		dto.setLastName(DTO_LASTNAME);
+		User existingUser = testUserBuilder().id(ID).build() ;
+		User updatedUser = testUserBuilder().id(ID).lastname(DTO_LASTNAME).build() ;
 		
-		mockMvc.perform(post(getBaseUrl())
+		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
+		doReturn(Optional.of(updatedUser)).when(userService).update(anyString(), any(UserUpdateDto.class)) ;
+		
+		mockMvc.perform(put(getBaseUrl() + "/{id}", ID).header("Authorization", "Bearer " + jwtBuilder.jwt(existingUser))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectAsJsonString(params)))
-			.andExpect(status().isBadRequest());
-	}
-	
-	@Test
-	@DisplayName("POST /users Fail Invalid Email")
-	public void testCreateUserFailInvalidEmail() throws Exception {
-		Map<String, Object> params = new HashMap<>() ;
-		params.put("username", USERNAME) ;
-		params.put("password", PASSWORD) ;
-		params.put("email", "invalid") ;
-		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectAsJsonString(params)))
-			.andExpect(status().isBadRequest());
-	}
-	
-	@Test
-	@DisplayName("POST /users Fail Existing Email")
-	public void testCreateUserFailExitingEmail() throws Exception {
-		doReturn(Optional.of(testUser())).when(userService).findByEmail(EMAIL) ;
-		
-		Map<String, Object> params = new HashMap<>() ;
-		params.put("email", EMAIL) ;
-		params.put("username", USERNAME) ;
-		params.put("password", PASSWORD) ;
-		
-		mockMvc.perform(post(getBaseUrl())
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectAsJsonString(params)))
-			.andExpect(status().isBadRequest()) ;
-	}
-	
-	@Test
-	@DisplayName("GET /users Success")
-	public void testFindUsersSuccess() throws Exception {
-		doReturn(List.of(fullUser(), fullUserBuilder().id(ID + "2").build())).when(userService).findAll() ;
-		
-		MvcResult result = mockMvc.perform(get(getBaseUrl()))
+				.content(toJson(dto)))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.length()", is(2)))
-			.andExpect(jsonPath("$[0].id", is(ID)))
-			.andExpect(jsonPath("$[0].email", is(EMAIL)))
-			.andExpect(jsonPath("$[0].firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$[0].lastName", is(LASTNAME)))			
-			.andExpect(jsonPath("$[1].id", is(ID + "2")))
-			.andExpect(jsonPath("$[1].email", is(EMAIL)))
-			.andExpect(jsonPath("$[1].firstName", is(FIRSTNAME)))
-			.andExpect(jsonPath("$[1].lastName", is(LASTNAME)))			
-			.andReturn();
+			
+			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + existingUser.getId()))
+			.andExpect(jsonPath("$.id", org.hamcrest.CoreMatchers.any(String.class)))
+			.andExpect(jsonPath("$.email", is(updatedUser.getEmail())))
+			.andExpect(jsonPath("$.firstName", is(updatedUser.getFirstName())))
+			.andExpect(jsonPath("$.lastName", is(updatedUser.getLastName())))
+			.andExpect(jsonPath("$.picture", is(updatedUser.getPicture())));
 	}
 	
 	@Test
-	@DisplayName("PUT /users Success")
-	public void testUpdateUserSuccess() throws Exception {
+	public void givenUserWhenUpdatedOtherUserThenSuccess() throws Exception {
 		UserUpdateDto dto = new UserUpdateDto() ;
 		dto.setLastName(DTO_LASTNAME);
 		User existingUser = testUserBuilder().id(ID).build() ;
@@ -217,52 +239,17 @@ public class TestUserController {
 		doReturn(Optional.of(existingUser)).when(userService).findById(ID) ;
 		doReturn(Optional.of(updatedUser)).when(userService).update(ID, dto) ;
 		
-		mockMvc.perform(put(getBaseUrl() + "/{id}", ID)
+		mockMvc.perform(put(getBaseUrl() + "/{id}", OTHER_ID).header("Authorization", "Bearer " + jwtBuilder.jwt(updatedUser))
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(dto.toString()))
-			.andExpect(status().isOk())
-			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			
-			.andExpect(header().string(HttpHeaders.LOCATION, getBaseUrl() + "/" + existingUser.getId()))
-			.andExpect(jsonPath("$.id", org.hamcrest.CoreMatchers.any(String.class)))
-			.andExpect(jsonPath("$.email", is(updatedUser.getEmail())))
-			.andExpect(jsonPath("$.firstName", is(updatedUser.getFirstName())))
-			.andExpect(jsonPath("$.lastName", is(updatedUser.getLastName())));
-	}
-	
-	@Test
-	@DisplayName("DELETE /users/{id}> Success")
-	public void testDeleteUserSuccess() throws Exception {
-		doReturn(Optional.of(fullUser())).when(userService).findById(ID) ;
-		
-		mockMvc.perform(delete(getBaseUrl() + "/{id}", ID))
-			.andExpect(status().isNoContent()) ;
-	}
-	
-	@Test
-	@DisplayName("DELETE /users/{id}> Not Found")
-	public void testDeleteUserNotFound() throws Exception {
-		doReturn(Optional.empty()).when(userService).findById(ID) ;
-		
-		mockMvc.perform(delete(getBaseUrl() + "/{id}", ID))
-			.andExpect(status().isNotFound()) ;
-	}
-	
-	@Test
-	@DisplayName("DELETE /users Fail with Exception")
-	public void testDeleteUserFailWithException() throws Exception {
-		doReturn(Optional.of(fullUser())).when(userService).findById(ID) ;
-		doThrow(RuntimeException.class).when(userService).delete(ID) ;
-		
-		mockMvc.perform(delete(getBaseUrl() + "/{id}", ID))
-			.andExpect(status().isInternalServerError()) ;
+				.content(toJson(dto)))
+			.andExpect(status().isForbidden()) ;
 	}
 	
 	public static String objectAsJsonString(Object object) throws Exception {
 		return new ObjectMapper().writeValueAsString(object) ;
 	}
 	
-	public static String getBaseUrl() {
-		return "/api/v1/users" ;
+	public String getBaseUrl() {
+		return baseUri + "/users" ;
 	}
 }

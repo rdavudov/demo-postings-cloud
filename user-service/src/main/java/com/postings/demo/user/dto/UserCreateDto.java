@@ -3,19 +3,22 @@ package com.postings.demo.user.dto;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.postings.demo.user.validator.UniqueEmail;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Setter
+@Getter
 public class UserCreateDto {
+	
+	@NotNull(message = "missing id")
+	private String id ;
+	
 	@NotNull(message = "missing email")
 	@Email
 	@UniqueEmail
@@ -27,14 +30,4 @@ public class UserCreateDto {
 	private String lastName ;
 	
 	private String picture ;
-	
-	private static ObjectWriter jsonWriter = new ObjectMapper().writer() ;
-	
-	public String toString() {
-		try {
-			return jsonWriter.writeValueAsString(this) ;
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e) ;
-		}
-	}
 }

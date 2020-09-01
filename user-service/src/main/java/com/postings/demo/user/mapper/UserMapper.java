@@ -6,6 +6,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.postings.demo.user.dto.UserCreateDto;
+import com.postings.demo.user.dto.UserGetDto;
 import com.postings.demo.user.dto.UserUpdateDto;
 import com.postings.demo.user.model.User;
 
@@ -15,9 +16,7 @@ public interface UserMapper {
 	@Mapping(target = "email", ignore = true)
 	void mapUpdateUser(UserUpdateDto dto, @MappingTarget User user) ;
 	
-	@Mapping(target = "id", ignore = true)
-	@Mapping(target = "posts", ignore = true)
 	void mapCreateUser(UserCreateDto dto, @MappingTarget User user) ;
 	
-//	void mapGetUser(User user, @MappingTarget UserCreateDto dto) ;
+	UserGetDto mapUserToDto(User user) ;
 }

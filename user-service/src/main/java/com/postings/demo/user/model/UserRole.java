@@ -1,37 +1,28 @@
 package com.postings.demo.user.model;
 
-import javax.validation.constraints.Email;
+import java.util.Set;
+
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.postings.demo.user.validator.UniqueEmail;
-
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Document(collection = "Users")
+@Document(collection = "UserRoles")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class User {
+public class UserRole {
 	@Id
-	private String id ;
-	
-	@NotNull(message = "missing email")
-	@Email
-	@UniqueEmail
+	@NotNull
 	private String email ;
 	
-	@NotNull(message = "missing firstname")
-	private String firstName ;
-	
-	private String lastName ;
-	
-	private String picture ;
+	@NotEmpty
+	private Set<String> roles ;
 }

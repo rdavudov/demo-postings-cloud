@@ -1,0 +1,14 @@
+[
+	{	
+		"email": "test@test.com",
+		"roles": ["ROLE1", "ROLE2"]
+	}
+	,{
+		"email": "test2@test.com",
+		"roles": ["ROLE1", "BLOCKED"]
+	}
+	,{
+		"email": "admin@test.com",
+		"roles": ["ADMIN"]
+	}
+]

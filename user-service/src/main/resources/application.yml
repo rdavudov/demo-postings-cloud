@@ -1,15 +1,21 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
     name: user
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      username: mongouser
-      password: mongopass    
+#  data:
+#    mongodb:
+#      host: localhost
+#      port: 27017
+#      username: mongouser
+#      password: mongopass    
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs      
 
 service:
   base:
@@ -28,3 +34,4 @@ eureka:
     leaseRenewalIntervalInSeconds: 5
     leaseExpirationDurationInSeconds: 5    
 
+system.password: system

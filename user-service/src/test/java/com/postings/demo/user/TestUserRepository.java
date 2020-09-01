@@ -1,10 +1,7 @@
-package com.postings.demo.user;
+	package com.postings.demo.user;
 
 import static com.postings.demo.user.builder.TestUserBuilder.EMAIL;
 import static com.postings.demo.user.builder.TestUserBuilder.ID;
-import static com.postings.demo.user.builder.TestUserBuilder.PASSWORD;
-import static com.postings.demo.user.builder.TestUserBuilder.USERNAME;
-import static com.postings.demo.user.builder.TestUserBuilder.VERSION;
 import static com.postings.demo.user.builder.TestUserBuilder.fullUser;
 import static com.postings.demo.user.builder.TestUserBuilder.fullUserBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.domain.Example;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.postings.demo.user.extension.MongoDataFile;
