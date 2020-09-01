@@ -39,6 +39,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
+			// CSRF are useful with browser requested requests where evil sites can re-send request to our resource
+			// if we are just building api consumed by other microservices it is not needed
 			.csrf().disable()
 			.authorizeRequests()
 				.mvcMatchers("/eureka").hasAuthority("USER")

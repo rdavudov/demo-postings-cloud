@@ -1,14 +1,14 @@
-server.port: 8443
+server.port: 8090
 
 spring.application.name: gateway
 
 spring.cloud.gateway.discovery.locator.enabled: true
 
-server.ssl:
-  key-store-type: PKCS12
-  key-store: classpath:keystore/postings.jks
-  key-store-password: postings
-  key-alias: postings
+#server.ssl:
+#  key-store-type: PKCS12
+#  key-store: classpath:keystore/postings.jks
+#  key-store-password: postings
+#  key-alias: postings
 
 service:
   eureka-username: u
@@ -61,3 +61,33 @@ spring.cloud.gateway.routes:
   filters:
   - SetPath=/api/v1/users/{segment}    
   
+- id: roles-api-without-segment
+  uri: lb://user
+  predicates:
+  - Path=/api/roles
+  filters:
+  - SetPath=/api/v1/roles
+
+- id: roles-api-with-segment
+  uri: lb://user
+  predicates:
+  - Path=/api/roles/{segment}
+  filters:
+  - SetPath=/api/v1/roles/{segment}      
+  
+- id: google-sign-in
+  uri: http://localhost:8080
+  predicates:
+  - Path=/login
+  filters:
+  - SetPath=/login
+  
+- id: google-authorize
+  uri: http://localhost:8080
+  predicates:
+  - Path=/oauth2/authorization/**
+  
+- id: google-redirect
+  uri: http://localhost:8080
+  predicates:
+  - Path=/login/oauth2/code/**
