@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +39,7 @@ public class CategoryController {
 	private final CategoryService categoryService ;
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getCategory(@PathVariable("id") Long id, @RequestHeader("user-id") String userId) {
+	public ResponseEntity<?> getCategory(@PathVariable("id") Long id, @AuthenticationPrincipal JwtAuthenticationToken jwt) {
 		return categoryService.findById(id).map(cat -> {
 			try {
 				return ResponseEntity.ok()
@@ -51,12 +53,12 @@ public class CategoryController {
 	}
 	
 	@GetMapping
-	public Iterable<Category> getCategories(@RequestHeader("user-id") String userId) {
+	public Iterable<Category> getCategories(@AuthenticationPrincipal JwtAuthenticationToken jwt) {
 		return categoryService.findAll() ;
 	}
 	
 	@PostMapping
-	public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category, @RequestHeader("user-id") String userId) {
+	public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category, @AuthenticationPrincipal JwtAuthenticationToken jwt) {
 		try {
 			Category createdCategory = categoryService.save(category) ;
 			return ResponseEntity
@@ -68,7 +70,7 @@ public class CategoryController {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<?> updateategory(@PathVariable("id") Long id, @Valid @RequestBody Category category, @RequestHeader("user-id") String userId) {
+	public ResponseEntity<?> updateategory(@PathVariable("id") Long id, @Valid @RequestBody Category category, @AuthenticationPrincipal JwtAuthenticationToken jwt) {
 		return categoryService.findById(id).map(cat -> {
 			try {
 				category.setId(id);
@@ -81,12 +83,10 @@ public class CategoryController {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build() ;
 			}
 		}).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build()) ;
-
-		
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deletePost(@PathVariable("id") Long id, @RequestHeader("user-id") String userId) {
+	public ResponseEntity<?> deletePost(@PathVariable("id") Long id, @AuthenticationPrincipal JwtAuthenticationToken jwt) {
 		return categoryService.findById(id).map(cat -> {
 			try {
 				categoryService.delete(id) ;

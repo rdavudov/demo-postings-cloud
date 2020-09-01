@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -39,16 +38,14 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.postings.demo.post.builders.PostBuilder;
-import com.postings.demo.post.client.UserClient;
 import com.postings.demo.post.model.Post;
-import com.postings.demo.post.model.User;
 import com.postings.demo.post.repository.HashtagRepository;
 import com.postings.demo.post.repository.PostRepository;
 import com.postings.demo.post.service.PostService;
 
 @SpringBootTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 public class PostServiceTests {
 
 	@Autowired
@@ -60,18 +57,13 @@ public class PostServiceTests {
 	@MockBean
 	private HashtagRepository hashtagRepository ;
 	
-	@MockBean
-	private UserClient userClient ;
-	
 	@BeforeEach
 	public void setUp() {
-		when(userClient.getUser(anyString())).thenReturn(Optional.of(new User())) ;
 		doNothing().when(hashtagRepository).deleteByPostId(anyLong());
 		when(hashtagRepository.save(any())).thenReturn(null);
 	}
 	
 	@Test
-	@DisplayName("findById Success")
 	public void givenPostIdWhenFindByIdThenSuccess() {
 		doReturn(Optional.of(new PostBuilder().sample().build())).when(postRepository).findById(ID) ;
 		Optional<Post> post = postService.findById(ID) ;
@@ -80,7 +72,6 @@ public class PostServiceTests {
 	}
 	
 	@Test
-	@DisplayName("findById NotFound")
 	public void givenNotExistingPostIdWhenFindByIdThenNotFound() {
 		doReturn(Optional.empty()).when(postRepository).findById(ID) ;
 		Optional<Post> post = postService.findById(ID) ;
@@ -89,7 +80,6 @@ public class PostServiceTests {
 	}
 	
 	@Test
-	@DisplayName("save Success")
 	public void givenPostWhenIsSavedThenSuccess() {
 		Post post = new PostBuilder().sample().build() ;
 		doReturn(post).when(postRepository).save(any()) ;
@@ -113,7 +103,6 @@ public class PostServiceTests {
 	}
 	
 	@Test
-	@DisplayName("update Success")
 	public void givenPostWhenIsUpdatedThenSuccess() {
 		Post post = new PostBuilder().sample().build() ;
 		doReturn(post).when(postRepository).save(any()) ;
@@ -137,7 +126,6 @@ public class PostServiceTests {
 	}
 	
 	@Test
-	@DisplayName("delete Success")
 	public void givenPostIdWhenIsDeletedThenSuccess() {
 		doNothing().when(postRepository).deleteById(anyLong());
 		
@@ -147,7 +135,6 @@ public class PostServiceTests {
 	}
 	
 	@Test
-	@DisplayName("findByUserId Success")
 	public void givenPageWhenIsGetThenSuccess() {
 		Page<Post> page = new PageImpl<>(new PostBuilder().samples(5)) ;
 		when(postRepository.findByUserId(anyString(), any(Pageable.class))).thenReturn(page) ;
@@ -156,7 +143,6 @@ public class PostServiceTests {
 	}
 	
 	@Test
-	@DisplayName("findByUserIdOrIsPublic Success")
 	public void givenUserIdAndPublicWhenIsGetThenSuccess() {
 		List<Post> list = new PostBuilder().samples(5) ;
 		when(postRepository.findByUserIdOrIsPublic(anyString(), anyBoolean())).thenReturn(list) ;

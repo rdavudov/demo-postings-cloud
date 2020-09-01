@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.postings.demo.post.client.UserClient;
 import com.postings.demo.post.model.Hashtag;
 import com.postings.demo.post.model.Post;
 import com.postings.demo.post.model.User;
@@ -18,7 +17,7 @@ import com.postings.demo.post.repository.HashtagRepository;
 import com.postings.demo.post.repository.PostRepository;
 
 @Service
-public class DefaultPostService implements PostService {
+public class PostServiceImpl implements PostService {
 
 	@Autowired
 	private PostRepository postRepository ;
@@ -26,9 +25,6 @@ public class DefaultPostService implements PostService {
 	@Autowired
 	private HashtagRepository hashtagRepository ;
 	
-	@Autowired
-	private UserClient userClient ;
-
 	@Override
 	public Optional<Post> findById(long id) {
 		return postRepository.findById(id);
@@ -41,6 +37,10 @@ public class DefaultPostService implements PostService {
 	public List<Post> findByUserIdOrIsPublic(String userId, boolean isPublic) {
 		return postRepository.findByUserIdOrIsPublic(userId, isPublic) ;
 	}
+	
+	public int findCountByUserId(String userId) {
+		return postRepository.findCountByUserId(userId) ;
+	}
 
 	@Override
 	@Transactional
@@ -49,7 +49,6 @@ public class DefaultPostService implements PostService {
 		post.setEditedAt(post.getCreatedAt());
 		Post createdPost = postRepository.save(post);
 		if (createdPost != null) {
-			updateUserPostCount(createdPost) ;
 			updateHashtags(createdPost);
 		}
 		return createdPost ;
@@ -65,17 +64,10 @@ public class DefaultPostService implements PostService {
 		}
 		return updatedPost ;
 	}
+	
 	@Override
 	public void delete(Long id) {
 		postRepository.deleteById(id);
-	}
-	
-	private void updateUserPostCount(Post post) {
-		Optional<User> user = userClient.getUser(post.getUserId()) ;
-		if (user.isPresent()) {
-			user.get().setPosts(postRepository.findCountByUserId(post.getUserId()));
-			userClient.updateUser(post.getUserId(), user.get());
-		}
 	}
 	
 	private void updateHashtags(Post updatedPost) {

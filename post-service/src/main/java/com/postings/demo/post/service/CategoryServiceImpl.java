@@ -9,7 +9,7 @@ import com.postings.demo.post.model.Category;
 import com.postings.demo.post.repository.CategoryRepository;
 
 @Service
-public class DefaultCategoryService implements CategoryService {
+public class CategoryServiceImpl implements CategoryService {
 
 	@Autowired
 	private CategoryRepository categoryRepository ;

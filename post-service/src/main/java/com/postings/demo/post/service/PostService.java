@@ -10,15 +10,17 @@ import com.postings.demo.post.model.Post;
 
 public interface PostService {
 	
-	public Optional<Post> findById(long id) ;
+	Optional<Post> findById(long id) ;
 	
-	public Page<Post> findByUserId(String userId, Pageable pageable) ;
+	Page<Post> findByUserId(String userId, Pageable pageable) ;
 	
-	public List<Post> findByUserIdOrIsPublic(String userId, boolean isPublic) ;
+	List<Post> findByUserIdOrIsPublic(String userId, boolean isPublic) ;
 	
-	public Post save(Post post) ;
+	Post save(Post post) ;
 	
-	public Post update(Post post) ;
+	Post update(Post post) ;
 	
-	public void delete(Long id) ;
+	void delete(Long id) ;
+	
+	int findCountByUserId(String userId) ;
 }

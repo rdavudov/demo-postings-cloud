@@ -1,9 +1,0 @@
-{
-	"request": {
-		"method": "GET",
-		"urlPattern": "/api/v1/users/23456"
-	},
-	"response": {
-		"status": 404
-	}
-}

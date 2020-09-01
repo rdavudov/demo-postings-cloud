@@ -1,7 +1,7 @@
 server:
-  port: 8081
+  port: 8082
 
-debug: true
+debug: false
 
 spring:
   application:
@@ -17,15 +17,23 @@ spring:
     properties:
       dialect: org.hibernate.dialect.PostgreSQLDialect
       show-sql: true  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs           
 
 service:
   base:
     uri: /api/v1
   user:
-    uri: http://localhost:8080/api/v1/user
+    uri: http://gateway/api
   eureka-username: u
   eureka-password: p
   eureka-server: localhost    
+
+system.password: system
           
 eureka:
   client:

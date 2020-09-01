@@ -19,7 +19,7 @@ import org.springframework.test.context.jdbc.Sql;
 import com.postings.demo.post.model.Category;
 import com.postings.demo.post.repository.CategoryRepository;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 @DataJpaTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
 @Transactional
 public class CategoryRepositoryTests {

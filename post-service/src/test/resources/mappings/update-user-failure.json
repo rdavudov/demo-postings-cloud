@@ -1,7 +1,7 @@
 {
 	"request": {
-		"method": "PUT",
-		"urlPattern": "/api/v1/users/23456"
+		"method": "POST",
+		"urlPattern": "/api/stats/23456"
 	},
 	"response": {
 		"status": 500

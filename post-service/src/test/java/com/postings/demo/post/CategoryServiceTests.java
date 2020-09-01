@@ -28,7 +28,7 @@ import com.postings.demo.post.service.CategoryService;
 
 @SpringBootTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 public class CategoryServiceTests {
 
 	@Autowired

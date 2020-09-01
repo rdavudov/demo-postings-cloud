@@ -1,13 +1,9 @@
 {
 	"request": {
-		"method": "PUT",
-		"urlPattern": "/api/v1/users/12345"
+		"method": "POST",
+		"urlPattern": "/api/stats/12345"
 	},
 	"response": {
-		"status": 200,
-		"bodyFileName": "json/update-user-response.json",
-		"headers": {
-			"Content-Type": "application/json"
-		}
+		"status": 200
 	}
 }

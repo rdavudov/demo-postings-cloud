@@ -1,11 +1,11 @@
 {
 	"request": {
 		"method": "GET",
-		"urlPattern": "/api/v1/users/12345"
+		"urlPattern": "/api/roles/23456"
 	},
 	"response": {
 		"status": 200,
-		"bodyFileName": "json/get-user-response.json",
+		"bodyFileName": "json/get-user-roles-admin.json",
 		"headers": {
 			"Content-Type": "application/json"
 		}

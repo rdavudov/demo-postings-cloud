@@ -34,7 +34,7 @@ import com.postings.demo.post.model.Hashtag;
 import com.postings.demo.post.model.Post;
 import com.postings.demo.post.repository.PostRepository;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
+@TestPropertySource(locations = "classpath:test.properties")
 @DataJpaTest(properties ={"eureka.client.enabled=false", "spring.cloud.config.enabled=false"})
 @Transactional
 @Sql({"/test-sql/insert_cats.sql"})
@@ -47,7 +47,6 @@ public class PostRepositoryTests {
 	private PostRepository postRepository ;
 	
 	@Test
-	@DisplayName("findById Success")
 	@Sql({"/test-sql/insert1.sql"})
 	public void givenPostIdWhenFindByIdThenSuccess() {
 		Optional<Post> post = postRepository.findById(ID) ;
@@ -65,7 +64,6 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("findById NotFound")
 	@Sql({"/test-sql/insert1.sql"})
 	public void givenNotExistingPostIdWhenFindByIdThenNotFound() {
 		Optional<Post> post = postRepository.findById(ID + 1) ;
@@ -73,7 +71,6 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("save Success")
 	public void givenPostWhenIsSavedThenSuccess() {
 		Post post = new PostBuilder().sample().id(null).build() ;
 		post.setCreatedAt(LocalDateTime.now());
@@ -93,7 +90,6 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("update by adding hashtag Success")
 	@Sql({"/test-sql/insert1.sql"})
 	public void givenPostWhenIsUpdatedThenSuccess() {
 		Post post = new PostBuilder().sample().id(ID).build() ;
@@ -116,7 +112,6 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("update by removing hashtag Success")
 	@Sql({"/test-sql/insert1.sql"})
 	public void givenPostHashtagRemovedWhenIsUpdatedThenSuccess() {
 		Post post = new PostBuilder().sample().id(ID).build() ;
@@ -139,14 +134,12 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("delete Success")
 	@Sql({"/test-sql/insert1.sql"})
 	public void givenPostIdWhenIsDeletedThenSuccess() {
 		postRepository.deleteById(ID) ;
 	}
 	
 	@Test
-	@DisplayName("findByUserId Success")
 	@Sql({"/test-sql/insert5.sql", "/test-sql/insert_public2.sql"})
 	public void givenPageWhenIsGetThenSuccess() {
 		Page<Post> posts = postRepository.findByUserId(USER_ID, PageRequest.of(0, 5).first()) ;
@@ -154,7 +147,6 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("findByUserIdOrIsPublic Success")
 	@Sql({"/test-sql/insert5.sql", "/test-sql/insert_public2.sql"})
 	public void givenUserIdAndPublicWhenIsGetThenSuccess() {
 		List<Post> posts = postRepository.findByUserIdOrIsPublic(USER_ID, true) ;
@@ -162,7 +154,6 @@ public class PostRepositoryTests {
 	}
 	
 	@Test
-	@DisplayName("findCountByUserId Success")
 	@Sql({"/test-sql/insert5.sql", "/test-sql/insert_public2.sql"})
 	public void givenUserIdWhenIsCountedThenSuccess() {
 		int count = postRepository.findCountByUserId(USER_ID) ;
