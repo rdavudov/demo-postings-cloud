@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: client
+  security:
+    oauth2:
+      client:
+        registration:
+          google:   
+            client-id: 791645621746-12fssi4p8kjqpcofhpefon8q7nt9pssu.apps.googleusercontent.com
+            client-secret: phfvxqlJw1yX2VubkRr32bL-
+            client-authentication-method: basic
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope:
+            - openid
+            - email
+            - profile
+
+server.port: 8080
+
+#eureka.client.enabled: false
+#spring.cloud.config.enabled: false
+
+service:
+  eureka-username: u
+  eureka-password: p
+  eureka-server: localhost    
+          
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${service.eureka-username}:${service.eureka-password}@${service.eureka-server}:8761/eureka/
+    initialInstanceInfoReplicationIntervalSeconds: 5
+    registryFetchIntervalSeconds: 5
+  instance:
+    leaseRenewalIntervalInSeconds: 5
+    leaseExpirationDurationInSeconds: 5  
+    
+management.endpoints.web.exposure.include: "*"

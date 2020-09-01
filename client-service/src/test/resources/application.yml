@@ -1,0 +1,19 @@
+spring:
+    security:
+        oauth2:
+            client:
+                provider:
+                    wiremock:
+                        authorization-uri: http://localhost:8077/oauth/authorize
+                        token-uri: http://localhost:8077/oauth/token
+                        user-info-uri: http://localhost:8077/userinfo
+                        user-name-attribute: sub
+
+                registration:
+                    wiremock:
+                        provider: wiremock
+                        authorization-grant-type: authorization_code
+                        scope: email
+                        redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+                        clientId: wm
+                        clientSecret: whatever
