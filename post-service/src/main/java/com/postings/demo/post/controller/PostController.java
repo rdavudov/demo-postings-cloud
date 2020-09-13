@@ -75,14 +75,14 @@ public class PostController {
 	}
 	
 	@GetMapping
-	public Page<PostDto> getPosts(@AuthenticationPrincipal JwtAuthenticationToken jwt, @PageableDefault(page = 0, size = 20) Pageable pageable) {
+	public List<PostDto> getPosts(@AuthenticationPrincipal JwtAuthenticationToken jwt, @PageableDefault(page = 0, size = 20) Pageable pageable) {
 		Page<Post> postPage = postService.findByUserId(jwt.getToken().getSubject(), pageable) ;
 		List<PostDto> dtoList = postPage.getContent().stream().map(p -> postMapper.toDto(p)).collect(Collectors.toList()) ;
-		return new PageImpl<>(dtoList, pageable, postPage.getTotalPages()) ;
+		return dtoList ;
 	}
 	
 	@GetMapping("/search")
-	public Page<PostDto> searchPosts(@RequestParam(name = "text", required = false) String text, 
+	public List<PostDto> searchPosts(@RequestParam(name = "text", required = false) String text, 
 			@RequestParam(name = "onlyTitle", required = false) Boolean onlyTitle, 
 			@RequestParam(name = "categoryId", required = false) Long categoryId, 
 			@RequestParam(name = "hashtags", required = false) Set<String> hashtags,
@@ -138,7 +138,7 @@ public class PostController {
 		List<PostDto> dtoList = posts.stream().map(p -> postMapper.toDto(p)).collect(Collectors.toList()) ;
 		List<PostDto> pageDto = dtoList.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()) ;
 		
-		return new PageImpl<>(pageDto, pageable, dtoList.size() / pageable.getPageSize()) ;
+		return pageDto ;
 	}
 	
 	@PostMapping

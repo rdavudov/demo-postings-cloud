@@ -4,12 +4,12 @@ server:
 spring:
   application:
     name: user
-#  data:
-#    mongodb:
-#      host: localhost
-#      port: 27017
-#      username: mongouser
-#      password: mongopass    
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      username: mongouser
+      password: mongopass    
   security:
     oauth2:
       resourceserver:

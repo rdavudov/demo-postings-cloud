@@ -185,7 +185,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(20)))
+			.andExpect(jsonPath("$.length()", is(20)))
 			.andReturn();
 	}
 	
@@ -201,7 +201,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(5)))
+			.andExpect(jsonPath("$.length()", is(5)))
 			.andReturn();
 	}
 	
@@ -218,7 +218,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(4)))
+			.andExpect(jsonPath("$.length()", is(4)))
 			.andReturn();
 	}
 	
@@ -235,7 +235,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(8)))
+			.andExpect(jsonPath("$.length()", is(8)))
 			.andReturn();
 	}
 	
@@ -252,7 +252,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(8)))
+			.andExpect(jsonPath("$.length()", is(8)))
 			.andReturn();
 		
 		System.out.println(result.getResponse().getContentAsString());
@@ -272,7 +272,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(3)))
+			.andExpect(jsonPath("$.length()", is(3)))
 			.andReturn();
 		
 		System.out.println(result.getResponse().getContentAsString());
@@ -294,7 +294,7 @@ public class PostControllerTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(4)))
+			.andExpect(jsonPath("$.length()", is(4)))
 			.andReturn();
 	}
 	

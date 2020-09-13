@@ -250,7 +250,7 @@ public class PostIntegrationTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(1)))
+			.andExpect(jsonPath("$.length()", is(1)))
 			.andReturn();
 	}
 	
@@ -263,7 +263,7 @@ public class PostIntegrationTests {
 				.header("Authorization", "Bearer " + jwtBuilder.jwt()))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$..content.length()", hasItems(1)))
+			.andExpect(jsonPath("$.length()", is(1)))
 			.andReturn();
 	}
 	

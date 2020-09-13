@@ -1,41 +1,30 @@
 package com.postings.demo.client;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.postings.demo.client.annotation.OAuth2Extension;
 import com.postings.demo.client.annotation.OAuth2MockUser;
-import com.postings.demo.client.annotation.OAuth2Test;
+import com.postings.demo.client.extension.OAuth2Extension;
+import com.postings.demo.client.extension.OAuth2Test;
+import com.postings.demo.client.service.UserService;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+import lombok.Getter;
+import lombok.Setter;
+
+@SpringBootTest
 @ExtendWith({SpringExtension.class, OAuth2Extension.class})
 @AutoConfigureMockMvc
 public class ClientControllerTests implements OAuth2Test {
@@ -44,41 +33,40 @@ public class ClientControllerTests implements OAuth2Test {
 	private MockMvc mockMvc ;
 	
 	@Autowired
+	@Getter
 	private ClientRegistrationRepository clientRegistrationRepository ;
 	
 	@Autowired
-	private OAuth2AuthorizedClientRepository clientRepository ;
+	@Getter
+	private OAuth2AuthorizedClientRepository oauth2AuthorizedClientRepository ;
 	
+	@MockBean
+	private UserService userService ;
+	
+	@Getter
+	@Setter
 	private MockHttpSession session ;
 	
-//	@Test
-//	@OAuth2MockUser(principal = "id", claims = {"given_name=Test", "family_name=Testov", "email=test@test.com", "email_verified=true", "picture=http://mypic.com"})
+	@Test
+	@OAuth2MockUser(principal = "id", 
+		claims = {"given_name=Test", "family_name=Testov", "email=test@test.com", "email_verified=true", "picture=http://mypic.com"})
 	public void givenOAuthWhenLoginThenSuccess() throws Exception {
+		
 		mockMvc
-			.perform(get("/").session(session))
+			.perform(get("/").session(getSession()))
 			.andExpect(status().isOk()) ;
 	}
 	
 	@Test
-	public void givenOAuthWhenLoginThenSuccess2() throws Exception {
+	@OAuth2MockUser(principal = "id", 
+		claims = {"given_name=Test", "family_name=Testov", "email=test@test.com", "email_verified=true", "picture=http://mypic.com"},
+		authorities = {"ROLE_BLOCKED"})
+	public void givenBlockedUserWhenHomeThenRedirected() throws Exception {
+		
 		mockMvc
-			.perform(get("/login/oauth2/code/").with(oidcLogin()))
-			.andExpect(status().isOk()) ;
+			.perform(get("/").session(getSession()))
+			.andExpect(status().isForbidden())
+			.andExpect(forwardedUrl("/blocked"));
 	}
 	
-	
-	@Override
-	public void setSession(MockHttpSession session) {
-		this.session = session ;
-	}
-
-	@Override
-	public ClientRegistrationRepository getClientRegistrationRepository() {
-		return clientRegistrationRepository;
-	}
-
-	@Override
-	public OAuth2AuthorizedClientRepository getOAuth2AuthorizedClientRepository() {
-		return clientRepository;
-	}
 }

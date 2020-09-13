@@ -20,6 +20,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.authorizeRequests(reqs -> 
 				reqs
 					.mvcMatchers("/login").permitAll()
+					.mvcMatchers("/posts").permitAll()
 					.mvcMatchers("/blocked").hasRole("BLOCKED")
 					.anyRequest().access("!hasRole('BLOCKED')"))
 			.oauth2Login()

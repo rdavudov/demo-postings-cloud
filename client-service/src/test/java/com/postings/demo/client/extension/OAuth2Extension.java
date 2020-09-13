@@ -1,4 +1,4 @@
-package com.postings.demo.client.annotation;
+package com.postings.demo.client.extension;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -10,21 +10,20 @@ import java.util.Optional;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+
+import com.postings.demo.client.annotation.OAuth2MockUser;
 
 public class OAuth2Extension implements BeforeEachCallback, AfterEachCallback {
 
@@ -51,7 +50,7 @@ public class OAuth2Extension implements BeforeEachCallback, AfterEachCallback {
 				OAuth2AuthorizedClient client = new OAuth2AuthorizedClient(test.getClientRegistrationRepository().findByRegistrationId(oauth2.clientId()), 
 						oauth2.principal(), new OAuth2AccessToken(TokenType.BEARER, "abc", now, now.plusMillis(60000L))) ;
 				
-				test.getOAuth2AuthorizedClientRepository().saveAuthorizedClient(client, authToken, null, null);
+				test.getOauth2AuthorizedClientRepository().saveAuthorizedClient(client, authToken, null, null);
 				
 				MockHttpSession session = new MockHttpSession();
 				session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, new SecurityContextImpl(authToken));
