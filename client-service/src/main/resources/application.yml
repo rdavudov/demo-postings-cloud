@@ -6,8 +6,8 @@ spring:
       client:
         registration:
           google:   
-            client-id: 791645621746-12fssi4p8kjqpcofhpefon8q7nt9pssu.apps.googleusercontent.com
-            client-secret: phfvxqlJw1yX2VubkRr32bL-
+            client-id: xxx
+            client-secret: xxx
             client-authentication-method: basic
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
